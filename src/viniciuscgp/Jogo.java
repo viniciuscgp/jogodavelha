@@ -44,6 +44,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 	Oponente jogadorAtual;
 	Botao botoesMenu[];
 	Botao botoesFinal[];
+	Botao botaoPlay;
 	Timer fps;
 	String dificuldadeAtual;
 	Banner infoRodape;
@@ -53,6 +54,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 	private boolean mouseSolta = false;
 
 	BufferedImage imgVelhinha = null;
+	BufferedImage imgPlay = null;
 
 	int estado;
 	int dificuldade;
@@ -67,10 +69,10 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 	private static final int E_FINAL = 4; // Tela de fim de jogo e analise
 
 	// Cores usadas no jogo
-	private static final Color C_BG_MENU = Util.cor(79, 40, 100);
+	private static final Color C_BG_MENU = Util.cor(79, 60, 90);
 	private static final Color C_FG_MENU = Util.cor(70, 0, 0);
 
-	private static final Color C_BG_JOGO = Util.cor(79, 80, 100);
+	private static final Color C_BG_JOGO = Util.cor(70, 60, 90);
 
 	private static final Color C_BG_HUD = Util.cor(79, 90, 90);
 	private static final Color C_FG_HUD = Util.cor(241, 70, 90);
@@ -108,6 +110,12 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 			System.out.println(e.getMessage());
 		}
 
+		try {
+			imgPlay = ImageIO.read(getClass().getResource("/images/play.png"));
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+
 		teclas = new boolean[255];
 		for (int i = 0; i < 255; i++) {
 			teclas[i] = false;
@@ -118,17 +126,19 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		botoesMenu[1] = new Botao("Médio", botoesMenu[0].getNext(), botoesMenu[0].getY());
 		botoesMenu[2] = new Botao("Difícil", botoesMenu[1].getNext(), botoesMenu[1].getY());
 
-		botoesFinal = new Botao[2];
+		botoesFinal = new Botao[1];
 		botoesFinal[0] = new BotaoMedio("Jogar novamente", 270, 450);
-		botoesFinal[1] = new Botao("Sair", botoesFinal[0].getNext(), botoesFinal[0].getY());
-
 		botoesFinal[0].setVisivel(false);
-		botoesFinal[1].setVisivel(false);
+		botoesFinal[0].centralizaH(frame.W);
+
+		botaoPlay = new BotaoPequeno("", 10, 10);
+		botaoPlay.setImagem(imgPlay);
 
 		// Carrega uma fonte externa (ttf)
 		// ------------------------------------------------------------------------------
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		fonteEspecial = "Arial";
+
 		try {
 			ge.registerFont(
 					Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/other/Niconne-Regular.ttf")));
@@ -139,12 +149,12 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 
 		// Bobeirinha de hud giratorio
 		// ------------------------------------------------------------------------------
-		infoRodape = new Banner("By Vinicius César - Twitter @viniciuscgp - ESC para sair a qualquer momento", 0,
+		infoRodape = new Banner("By Vinicius César - Twitter @viniciuscgp - !■ ESC ■> para sair a qualquer momento", 0,
 				frame.H - 40 - 30, frame.W, 70);
 
 		// Inicializa uma thread de contagem que vai dar repaint no panel
 		inicializaFps();
-		// musica = Util.playSound("/sounds/mr_clown.wav", Clip.LOOP_CONTINUOUSLY);
+		musica = Util.playSound("/sounds/mr_clown.wav", Clip.LOOP_CONTINUOUSLY);
 	}
 
 	// Inicia no modo menu
@@ -265,12 +275,25 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 				Jogo.this.repaint();
 			}
 
-		}, 0, 20);
+		}, 0, 17);
 		System.out.println("Timer (FPS) criado.");
 	}
 
 	// Funções de processamento de cada Estado
 	// ------------------------------------------
+	private void botaoPlay() {
+		if (mousePress) {
+			if (botaoPlay.pontoSobre(mouseX, mouseY)) {
+				if (musica != null) {
+					if (musica.isRunning())
+						musica.stop();
+					else
+						musica.start();
+				}
+			}
+		}
+
+	}
 
 	private void processaEstado() {
 		switch (estado) {
@@ -303,10 +326,12 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 			Util.playSound("/sounds/click.wav");
 			comecaJogo(j);
 		}
+
+		botaoPlay();
 	}
 
 	private void estadoJogo() {
-
+		botaoPlay();
 	}
 
 	private void estadoFimPartida() {
@@ -323,6 +348,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 				}
 			}
 		}
+
 		// Jogar novamente
 		if (j == 0) {
 			for (int i = 0; i < botoesMenu.length; i++) {
@@ -330,10 +356,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 			}
 			telaInicial();
 		}
-		// Sair
-		if (j == 1) {
-			queroSair();
-		}
+		botaoPlay();
 
 	}
 
@@ -386,6 +409,8 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 
 		infoRodape.drawMe(g);
 
+		botaoPlay.drawMe(g, mouseX, mouseY, mousePress);
+
 	}
 
 	// Estado = JOGO
@@ -411,6 +436,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		g2.setColor(C_FG_HUD);
 		drawCenterW(g, "Modo de dificuldade: " + dificuldadeAtual, frame.H - 90);
 		infoRodape.drawMe(g);
+		botaoPlay.drawMe(g, mouseX, mouseY, mousePress);
 	}
 
 	// Estado = FIM_PARTIDA
@@ -457,6 +483,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		}
 
 		infoRodape.drawMe(g);
+		botaoPlay.drawMe(g, mouseX, mouseY, mousePress);
 	}
 
 	private void drawCenterW(Graphics g, String str, int y) {

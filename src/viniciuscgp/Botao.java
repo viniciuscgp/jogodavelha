@@ -7,6 +7,7 @@ package viniciuscgp;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 
 public class Botao {
 	private final static Color C_BG_N = Util.cor(225, 60, 80); // Fundo normal angulo, sturacao, brilho
@@ -14,6 +15,7 @@ public class Botao {
 	private final static Color C_BG_P = Util.cor(225, 60, 50); // Fundo pressionado
 	private final static Color C_FG_T = Util.cor(52, 100, 100); // Cor do texto
 	private final static int GAP = 10;
+	private BufferedImage imagem;
 	protected int x, y, w, h;
 	protected String texto;
 	protected int grupo;
@@ -28,6 +30,7 @@ public class Botao {
 		this.h = 35;
 		this.grupo = 0;
 		this.visivel = true;
+		this.imagem = null;
 	}
 
 	public boolean pontoSobre(int x, int y) {
@@ -62,10 +65,23 @@ public class Botao {
 		int px, py;
 		px = x + dx + (w - g.getFontMetrics().stringWidth(texto)) / 2;
 		py = y + dy - (h - g.getFontMetrics().getHeight()) / 2 - g.getFontMetrics().getMaxDescent();
-		g.setColor(C_FG_T);
 
+		g.setColor(C_FG_T);
 		g.drawString(texto, px, py + h);
+
+		if (imagem != null) {
+			g.drawImage(imagem, x + (w - imagem.getWidth()) / 2, y + (h - imagem.getHeight()) / 2, null);
+		}
+
 		return mouseB;
+	}
+
+	public void centralizaH(int larg) {
+		x = (larg - w) / 2;
+	}
+
+	public void centralizaV(int alt) {
+		y = (alt - h) / 2;
 	}
 
 	public void setGrupo(int g) {
@@ -98,5 +114,9 @@ public class Botao {
 
 	public int getY() {
 		return y;
+	}
+
+	public void setImagem(BufferedImage img) {
+		this.imagem = img;
 	}
 }

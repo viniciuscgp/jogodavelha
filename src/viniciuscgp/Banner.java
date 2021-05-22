@@ -35,9 +35,27 @@ public class Banner {
 
 		int py = (h - (g2.getFontMetrics().getHeight() + g2.getFontMetrics().getDescent())) / 2;
 
-		g2.setFont(new Font("Arial", Font.PLAIN, 14));
+		g2.setFont(new Font("Arial Black", Font.PLAIN, 14));
 		g2.setColor(Util.C_PRETO);
-		g2.drawString(texto, dx, y + py);
+		for (int i = 0; i < texto.length(); i++) {
+			if (texto.charAt(i) == '<') {
+				g2.setColor(Util.C_AMARELO);
+				continue;
+			}
+			if (texto.charAt(i) == '!') {
+				g2.setColor(Util.C_VERMELHO);
+				continue;
+			}
+			if (texto.charAt(i) == '>') {
+				g2.setColor(Util.C_PRETO);
+				continue;
+			}
+
+			g2.drawString(texto.substring(i, i + 1), dx + g2.getFontMetrics().stringWidth(texto.substring(0, i)),
+					y + py);
+
+		}
+		// g2.drawString(texto, dx, y + py);
 		dx -= 1;
 		if (dx < -g2.getFontMetrics().stringWidth(texto)) {
 			dx = x + w + 10;

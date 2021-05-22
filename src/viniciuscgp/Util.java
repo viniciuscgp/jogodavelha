@@ -14,6 +14,8 @@ public final class Util {
 
 	public static final Color C_BRANCO = cor(0, 0, 100);
 	public static final Color C_PRETO = cor(0, 0, 0);
+	public static final Color C_AMARELO = cor(58, 100, 100);
+	public static final Color C_VERMELHO = cor(359, 100, 100);
 
 	// Fiz essa funçao pra converter aqueles pickers de cores que tem
 	// na internet para os parametros do getHSBColor()
