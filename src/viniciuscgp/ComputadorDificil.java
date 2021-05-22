@@ -1,5 +1,9 @@
 package viniciuscgp;
 
+//
+//Classe - Computador Dificil
+//
+
 public class ComputadorDificil extends Computador {
 
 	public ComputadorDificil() {

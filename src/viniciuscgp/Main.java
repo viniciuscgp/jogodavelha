@@ -5,10 +5,11 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 
 //
-// Função: Ponto de entrada 
+// Classe - Ponto de entrada 
 //
 public class Main extends JFrame {
-	
+
+	private static final long serialVersionUID = 1L;
 	// Tamanho da janela do jogo
 	public final int W = 800;
 	public final int H = 600;

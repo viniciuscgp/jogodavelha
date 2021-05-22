@@ -1,7 +1,7 @@
 package viniciuscgp;
 
 //
-// Função: Class abstrata que devera ser implementada para as jogadas do computador.
+// Classe: Classe abstrata que devera ser implementada para as jogadas do computador.
 //
 
 public abstract class Computador extends Oponente {

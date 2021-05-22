@@ -1,7 +1,7 @@
 package viniciuscgp;
-//
 
-// Fun��o: esta classe gerencia o Tabuleiro do Jogo
+//
+// Classe Tabuleiro - esta classe gerencia o Tabuleiro do Jogo
 //
 
 import java.awt.Color;
@@ -22,9 +22,9 @@ public class Tabuleiro {
 
 	// Estados em que o tabuleiro pode se encontrar
 	//
-	public static final int VENCEU = 1;
-	public static final int EMPATOU = 2;
-	public static final int JOGANDO = 3;
+	public static final int E_VENCEU = 1;
+	public static final int E_EMPATOU = 2;
+	public static final int E_JOGANDO = 3;
 
 	private static final int W = 100; // Larg
 	private static final int H = 100; // Alt
@@ -41,6 +41,7 @@ public class Tabuleiro {
 	// ---------------------------------------------------
 	private int[][] matriz;
 	private boolean guiTravada;
+	private Jogo jogo; // Usado para enviar um sinal para o jogo qdo o jogador marcar.
 
 	public void setGuiTravada(boolean v) {
 		guiTravada = v;
@@ -50,7 +51,8 @@ public class Tabuleiro {
 		return guiTravada;
 	}
 
-	public Tabuleiro() {
+	public Tabuleiro(Jogo jogo) {
+		this.jogo = jogo;
 		matriz = new int[3][3];
 		guiTravada = true;
 		System.out.println("Construtor do Tabuleiro");
@@ -79,7 +81,7 @@ public class Tabuleiro {
 			throw new RuntimeException("Tabuleiro: linha e coluna deve estar entre 0 a 2!");
 		}
 		if (valor != X && valor != O && valor != VAZIO) {
-			throw new RuntimeException("Tabuleiro: valor de marca��o incorreto!");
+			throw new RuntimeException("Tabuleiro: valor de marcação incorreto!");
 		}
 		matriz[linha][coluna] = valor;
 	}
@@ -96,6 +98,7 @@ public class Tabuleiro {
 	// Desenha o tabulero no contexto gráfico fornececido
 	// ---------------------------------------------------
 	public void desenheMe(Graphics g, int mouseX, int mouseY, boolean mouseSolta) {
+		boolean humanoJogou = false;
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				int v = celulaVerifica(i, j);
@@ -107,6 +110,7 @@ public class Tabuleiro {
 					if (mouseSolta) {
 						if (v == VAZIO) {
 							celulaMarca(i, j, X);
+							humanoJogou = true;
 						}
 					}
 				} else {
@@ -127,47 +131,62 @@ public class Tabuleiro {
 				}
 			}
 		}
+
+		if (humanoJogou) {
+			jogo.humanoJogou();
+			Util.playSound("/sounds/lip.wav");
+
+		}
 	}
 
 	public int verificaEstado() {
-		int estado = JOGANDO;
+		int estado = E_JOGANDO;
 		int soma = 0;
+
 		// Horizontal
 		for (int i = 0; i < 3; i++) {
 			soma = 0;
 			for (int j = 0; j < 3; j++) {
 				soma += matriz[i][j];
 			}
-			if (soma == 6 || soma == 24) estado = VENCEU;
+			if (soma == 6 || soma == 24)
+				estado = E_VENCEU;
 		}
+
 		// Vertical
 		for (int i = 0; i < 3; i++) {
 			soma = 0;
 			for (int j = 0; j < 3; j++) {
 				soma += matriz[j][i];
 			}
-			if (soma == 6 || soma == 24) estado = VENCEU;
+			if (soma == 6 || soma == 24)
+				estado = E_VENCEU;
 		}
+
 		// Diagonal esquerda direita
-		soma = matriz[0][0] + matriz[1][1] + matriz[2][2]; 
-		if (soma == 6 || soma == 24) estado = VENCEU;
-		
+		soma = matriz[0][0] + matriz[1][1] + matriz[2][2];
+		if (soma == 6 || soma == 24)
+			estado = E_VENCEU;
+
 		// Diagonal direita esquerda
-		soma = matriz[2][2] + matriz[1][1] + matriz[0][2]; 
-		if (soma == 6 || soma == 24) estado = VENCEU;
-		
+		soma = matriz[2][2] + matriz[1][1] + matriz[0][2];
+		if (soma == 6 || soma == 24)
+			estado = E_VENCEU;
+
 		// Verifica empate
 		boolean tudoCheio = true;
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
-				 if (matriz[j][i] != VAZIO) {
-					 tudoCheio = false;
-				 }
+				if (matriz[j][i] == VAZIO) {
+					tudoCheio = false;
+				}
 			}
 		}
-		if (tudoCheio) estado = EMPATOU;
-		
+		if (estado != E_VENCEU)
+			if (tudoCheio)
+				estado = E_EMPATOU;
+
 		return estado;
-	
+
 	}
 }

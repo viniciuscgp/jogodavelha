@@ -1,8 +1,7 @@
 package viniciuscgp;
 
-
 //
-// Fun��o: Class abstrata m�e de todos os oponentes. Isso permite que possa-se usar uma unica variavel
+// Função: Class abstrata m�e de todos os oponentes. Isso permite que possa-se usar uma unica variavel
 // para armazenar o oponente atual. 
 //
 

@@ -1,6 +1,7 @@
 package viniciuscgp;
+
 //
-// Fun��o: Controla as a��es do Jogador
+// Função: Controla as ações do Jogador
 //
 
 public class JogadorHumano extends Oponente {
