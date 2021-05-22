@@ -1,9 +1,11 @@
 package viniciuscgp;
 
-//
-// Classe - Computador Facil
+import java.util.Random;
+
 //
 
+// Classe - Computador Facil
+//
 
 public class ComputadorFacil extends Computador {
 
@@ -13,25 +15,20 @@ public class ComputadorFacil extends Computador {
 
 	@Override
 	public void proximaJogada(Tabuleiro tabuleiro) {
-		// No modo facil, o computador apenas marca o primeiro espaço vazio que ele
-		// econtrar
-		try {
-			for (int i = 0; i < 3; i++) {
-				for (int j = 0; j < 3; j++) {
-					if (tabuleiro.celulaVerifica(i, j) == Tabuleiro.VAZIO) {
-						tabuleiro.celulaMarca(i, j, Tabuleiro.O);
-						throw new RuntimeException("Marcou.");
-					}
-				}
+		// No modo facil, o computador apenas marca algum espaço vazio aleatorio
+		while (true) {
+			int l = new Random().nextInt(3);
+			int c = new Random().nextInt(3);
+			if (tabuleiro.celulaVerifica(l, c) == Tabuleiro.VAZIO) {
+				tabuleiro.celulaMarca(l, c, Tabuleiro.O);
+				break;
 			}
-		} catch (Exception e) {
-			// nada aqui
 		}
 	}
 
 	@Override
 	public String getDificuldadeDescricao() {
-		return "Nível de dificuldade: Fácil";
+		return "Fácil";
 	}
 
 	@Override

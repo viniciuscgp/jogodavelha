@@ -7,8 +7,10 @@ package viniciuscgp;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -32,7 +34,6 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 	// Teclas pressionadas
 	private boolean teclas[];
 
-	// parent aqui � o Janela principal classe Main.
 	// Uso para acessar dados
 	Main frame;
 
@@ -44,10 +45,20 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 	Botao botoesMenu[];
 	Botao botoesFinal[];
 	Timer fps;
+	String dificuldadeAtual;
+	Banner infoRodape;
 
 	private int mouseX, mouseY;
 	private boolean mousePress = false;
 	private boolean mouseSolta = false;
+
+	BufferedImage imgVelhinha = null;
+
+	int estado;
+	int dificuldade;
+	int ultimoEstadoTabuleiro;
+	String fonteEspecial;
+	Clip musica = null;
 
 	// Estados do jogo
 	private static final int E_MENU = 1; // Estou no menu
@@ -56,27 +67,19 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 	private static final int E_FINAL = 4; // Tela de fim de jogo e analise
 
 	// Cores usadas no jogo
-	private static final Color C_BG_MENU = Util.cor(79, 0, 100);
+	private static final Color C_BG_MENU = Util.cor(79, 40, 100);
 	private static final Color C_FG_MENU = Util.cor(70, 0, 0);
 
 	private static final Color C_BG_JOGO = Util.cor(79, 80, 100);
 
 	private static final Color C_BG_HUD = Util.cor(79, 90, 90);
-	private static final Color C_FG_HUD = Util.cor(261, 70, 90);
+	private static final Color C_FG_HUD = Util.cor(241, 70, 90);
 
 	private static final Color C_BG_FINAL = Util.cor(59, 50, 100);
-	private static final Color C_FG_FINAL = Util.cor(50, 20, 0);
-
-	BufferedImage imgVelhinha = null;
-
-	int estado;
-	int dificuldade;
-	int ultimoEstadoTabuleiro;
-	Clip musica;
+	private static final Color C_FG_FINAL = Util.cor(349, 100, 59);
 
 	// Construtor
 	public Jogo(Main f) {
-		// Este objeto vai ouvir os eventos
 		this.frame = f;
 		System.out.println("Construtor Jogo");
 		configuraJanela();
@@ -87,10 +90,11 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 	// Esta funcao so precisa executar uma vez
 	// ----------------------------------------
 	private void configuraJanela() {
+		// Este objeto vai ouvir os eventos
 		addKeyListener(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		// Frame pai
+		// Para o pack funcionar
 		setPreferredSize(new Dimension(frame.W, frame.H));
 		requestFocus();
 	}
@@ -121,10 +125,29 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		botoesFinal[0].setVisivel(false);
 		botoesFinal[1].setVisivel(false);
 
+		// Carrega uma fonte externa (ttf)
+		// ------------------------------------------------------------------------------
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		fonteEspecial = "Arial";
+		try {
+			ge.registerFont(
+					Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/other/Niconne-Regular.ttf")));
+			fonteEspecial = "Niconne";
+		} catch (FontFormatException | IOException e) {
+			e.printStackTrace();
+		}
+
+		// Bobeirinha de hud giratorio
+		// ------------------------------------------------------------------------------
+		infoRodape = new Banner("By Vinicius César - Twitter @viniciuscgp - ESC para sair a qualquer momento", 0,
+				frame.H - 40 - 30, frame.W, 70);
+
+		// Inicializa uma thread de contagem que vai dar repaint no panel
 		inicializaFps();
 		// musica = Util.playSound("/sounds/mr_clown.wav", Clip.LOOP_CONTINUOUSLY);
 	}
 
+	// Inicia no modo menu
 	private void telaInicial() {
 		estado = E_MENU;
 		dificuldade = 0;
@@ -144,13 +167,16 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		estado = E_JOGO;
 
 		jogador1 = new JogadorHumano();
+
 		// Herança e polimorfismo
 		switch (dif) {
 		case 0:
+			// Facil - Sempre começamos
 			jogador2 = new ComputadorFacil();
 			jogadorAtual = jogador1;
 			break;
 		case 1:
+			// Medio - As vezes o computador começa
 			jogador2 = new ComputadorMedio();
 			if (new Random().nextBoolean())
 				jogadorAtual = jogador1;
@@ -158,6 +184,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 				jogadorAtual = jogador2;
 			break;
 		case 2:
+			// Dificil - As vezes o computador começa
 			jogador2 = new ComputadorDificil();
 			if (new Random().nextBoolean())
 				jogadorAtual = jogador1;
@@ -165,6 +192,12 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 				jogadorAtual = jogador2;
 			break;
 		}
+
+		if (!jogador1.isHumano())
+			dificuldadeAtual = jogador1.getDificuldadeDescricao();
+		else
+			dificuldadeAtual = jogador2.getDificuldadeDescricao();
+
 		mudouJogador();
 	}
 
@@ -232,7 +265,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 				Jogo.this.repaint();
 			}
 
-		}, 0, 5);
+		}, 0, 20);
 		System.out.println("Timer (FPS) criado.");
 	}
 
@@ -336,11 +369,11 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		g2.fillRect(0, 0, frame.W, frame.H);
 		g2.setColor(C_FG_MENU);
 
-		g2.setFont(new Font("Arial", Font.BOLD, 32));
-		drawCenterW(g, "JOGO DA VELHA", centerY(g) - 150);
+		g2.setFont(new Font(fonteEspecial, Font.BOLD, 64));
+		drawCenterW(g, "O jogo da velha", 80);
 
 		if (imgVelhinha != null)
-			g2.drawImage(imgVelhinha, (frame.W - 200) / 2, (frame.H - 200) / 2, 200, 200, null, null);
+			g2.drawImage(imgVelhinha, (frame.W - 300) / 2, (frame.H - 300) / 2 - 60, 300, 300, null, null);
 
 		// Desenha os botoes
 		for (int i = 0; i < botoesMenu.length; i++) {
@@ -350,6 +383,8 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		g2.setColor(C_FG_MENU);
 		g2.setFont(new Font("Arial BOLD", Font.BOLD, 18));
 		drawCenterW(g, "Selecione a dificuldade", centerY(g) + 130);
+
+		infoRodape.drawMe(g);
 
 	}
 
@@ -363,7 +398,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 
 		g2.setFont(new Font("Arial Black", Font.BOLD, 32));
 		g2.setColor(C_FG_HUD);
-		drawCenterW(g, "Vez do: " + jogadorAtual.getDescricao(), 60);
+		drawCenterW(g, "Quem joga agora é o " + jogadorAtual.getDescricao(), 60);
 
 		tabuleiro.desenheMe(g, mouseX, mouseY, mouseSolta);
 
@@ -374,7 +409,8 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		g2.fillRect(0, frame.H - 150, frame.W, frame.H);
 		g2.setFont(new Font("Arial Black", Font.BOLD, 32));
 		g2.setColor(C_FG_HUD);
-		drawCenterW(g, jogadorAtual.getDificuldadeDescricao(), frame.H - (150 / 2));
+		drawCenterW(g, "Modo de dificuldade: " + dificuldadeAtual, frame.H - 90);
+		infoRodape.drawMe(g);
 	}
 
 	// Estado = FIM_PARTIDA
@@ -389,13 +425,16 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 
 		g2.setColor(C_BG_FINAL);
 		g2.fillRect(0, 0, frame.W, frame.H);
+
 		g2.setColor(C_FG_FINAL);
+		g2.setFont(new Font(fonteEspecial, Font.BOLD, 88));
+		g2.drawString("Fim", 320, 180);
+		g2.drawString("de Jogo", 270, 260);
 
-		g2.setFont(new Font("Arial", Font.BOLD, 32));
-		drawCenterW(g, "FIM DE JOGO", centerY(g) - 150);
-
-		if (imgVelhinha != null)
-			g2.drawImage(imgVelhinha, (frame.W - 200) / 2, (frame.H - 300) / 2, 200, 200, null, null);
+		/*
+		 * if (imgVelhinha != null) g2.drawImage(imgVelhinha, 10, (frame.H - 300) / 2 -
+		 * 100, 300, 300, null, null);
+		 */
 
 		// Desenha os botoes
 		for (int i = 0; i < botoesMenu.length; i++) {
@@ -417,6 +456,7 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 			botoesFinal[i].drawMe(g, mouseX, mouseY, mousePress);
 		}
 
+		infoRodape.drawMe(g);
 	}
 
 	private void drawCenterW(Graphics g, String str, int y) {
@@ -436,6 +476,10 @@ public class Jogo extends JPanel implements KeyListener, MouseListener, MouseMot
 		fps.purge();
 		int input = JOptionPane.showConfirmDialog(null, "Deseja sair ?", "Jogo da Velha", JOptionPane.YES_NO_OPTION);
 		if (input == 0) {
+			if (musica != null) {
+				musica.stop();
+				musica.flush();
+			}
 			frame.dispose();
 		} else {
 			inicializaFps();

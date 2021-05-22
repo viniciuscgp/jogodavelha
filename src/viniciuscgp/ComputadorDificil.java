@@ -9,7 +9,7 @@ public class ComputadorDificil extends Computador {
 	public ComputadorDificil() {
 		System.out.println("Construtor Computador: Dificil");
 	}
-	
+
 	@Override
 	public void proximaJogada(Tabuleiro tabuleiro) {
 		// TODO Auto-generated method stub
@@ -18,7 +18,7 @@ public class ComputadorDificil extends Computador {
 
 	@Override
 	public String getDificuldadeDescricao() {
-		return "Nível de dificuldade: Dificil";
+		return "Dificil";
 	}
 
 	@Override

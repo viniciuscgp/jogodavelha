@@ -9,14 +9,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 
 // Tabuleiro sera 3 x 3 
-// [ ] [ ] [ ]
-// [ ] [ ] [ ]
-// [ ] [ ] [ ]
+//    0   1   2
+// 0 [ ] [ ] [ ]
+// 1 [ ] [ ] [ ]
+// 2 [ ] [ ] [ ]
 
 public class Tabuleiro {
 	// Constantes que representam os valores possíveis na matriz
 	// do tabuleiro
-	public static final int X = 2; // Representa a letra X
+	public static final int X = 1; // Representa a letra X
 	public static final int O = 8; // Representa a letra O
 	public static final int VAZIO = 0; // Espaço vazio
 
@@ -149,7 +150,7 @@ public class Tabuleiro {
 			for (int j = 0; j < 3; j++) {
 				soma += matriz[i][j];
 			}
-			if (soma == 6 || soma == 24)
+			if (soma == 3 || soma == 24)
 				estado = E_VENCEU;
 		}
 
@@ -159,18 +160,18 @@ public class Tabuleiro {
 			for (int j = 0; j < 3; j++) {
 				soma += matriz[j][i];
 			}
-			if (soma == 6 || soma == 24)
+			if (soma == 3 || soma == 24)
 				estado = E_VENCEU;
 		}
 
 		// Diagonal esquerda direita
 		soma = matriz[0][0] + matriz[1][1] + matriz[2][2];
-		if (soma == 6 || soma == 24)
+		if (soma == 3 || soma == 24)
 			estado = E_VENCEU;
 
 		// Diagonal direita esquerda
-		soma = matriz[2][2] + matriz[1][1] + matriz[0][2];
-		if (soma == 6 || soma == 24)
+		soma = matriz[0][2] + matriz[1][1] + matriz[2][0];
+		if (soma == 3 || soma == 24)
 			estado = E_VENCEU;
 
 		// Verifica empate
@@ -182,6 +183,7 @@ public class Tabuleiro {
 				}
 			}
 		}
+
 		if (estado != E_VENCEU)
 			if (tudoCheio)
 				estado = E_EMPATOU;

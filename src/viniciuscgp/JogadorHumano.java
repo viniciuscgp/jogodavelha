@@ -23,6 +23,7 @@ public class JogadorHumano extends Oponente {
 
 	@Override
 	public void proximaJogada(Tabuleiro tabuleiro) {
+		// Sera feita pelo próprio ser humano com mouse.
 		return;
 	}
 
